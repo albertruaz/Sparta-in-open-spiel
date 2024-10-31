@@ -1,77 +1,60 @@
+#include "agents/searchBot.h"
+#include "open_cspiel/spiel_utils.h"
+#include "open_spiel/spiel.h"
 #include <iostream>
 #include <memory>
-#include <vector>
 #include <random>
+#include <string>
 
-#include "open_spiel/spiel.h"
-#include "open_spiel/spiel_utils.h"
-#include "open_spiel/games/hanabi/hanabi.h"
-
-// Function to print legal actions for a player
-void PrintLegalActions(const open_spiel::State& state,
-                       open_spiel::Player player,
-                       const std::vector<open_spiel::Action>& actions) {
-  std::cout << "Legal actions for player " << player << ":\n";
-  for (auto action : actions) {
-    std::cout << "  " << state.ActionToString(player, action) << "\n";
-  }
-}
-
-int main(int argc, char** argv) {
-  // Seed for random number generator
-  std::mt19937 rng(time(0));
-
-  // Load Tiny Hanabi game
+int main(int argc, char **argv) {
+  // 게임 로드: const 추가
   std::shared_ptr<const open_spiel::Game> game =
       open_spiel::LoadGame("tiny_hanabi");
-
-  if (!game) {
-    std::cerr << "Failed to load Tiny Hanabi game.\n";
-    return -1;
-  }
-
-  // Create initial game state
   std::unique_ptr<open_spiel::State> state = game->NewInitialState();
 
-  std::cout << "Starting Tiny Hanabi game...\n";
+  // 랜덤 넘버 생성기 선언
+  std::mt19937 rng(std::random_device{}());
 
-  // Main game loop
+  // SearchBot 인스턴스 생성
+  SearchBot search_bot(0, 100);
+
   while (!state->IsTerminal()) {
     if (state->IsChanceNode()) {
-      // Handle chance node
       auto outcomes = state->ChanceOutcomes();
-      std::vector<double> probabilities;
-      for (const auto& outcome : outcomes) {
-        probabilities.push_back(outcome.second);
-      }
-      std::discrete_distribution<> dist(probabilities.begin(), probabilities.end());
-      int index = dist(rng);
-      auto action = outcomes[index].first;
+      // rng를 사용하여 SampleAction 호출
+      auto action = open_spiel::SampleAction(outcomes, rng).first;
       state->ApplyAction(action);
     } else {
-      // Current player
+      // 현재 플레이어 정보 및 가능한 행동 가져오기
       open_spiel::Player player = state->CurrentPlayer();
       auto actions = state->LegalActions(player);
-      PrintLegalActions(*state, player, actions);
 
-      // Randomly select an action
-      std::uniform_int_distribution<> dis(0, actions.size() - 1);
-      auto action = actions[dis(rng)];
-      std::cout << "Player " << player << " chooses action: "
-                << state->ActionToString(player, action) << "\n";
+      // 플레이어에 따른 봇 종류 결정
+      std::string method = (player == 0) ? "searchbot" : "random";
 
-      // Apply the action
+      open_spiel::Action action;
+      if (method == "searchbot") {
+        // SearchBot을 사용하여 행동 결정
+        action = search_bot.GetAction(state.get());
+      } else {
+        // 랜덤하게 행동 선택
+        std::uniform_int_distribution<> dis(0, actions.size() - 1);
+        action = actions[dis(rng)];
+      }
+
+      std::cout << "Player " << player
+                << " chooses action: " << state->ActionToString(player, action)
+                << "\n";
+
       state->ApplyAction(action);
     }
-
-    // Print the current state
-    std::cout << "Current state:\n" << state->ToString() << "\n";
   }
 
-  // Game has ended; print final returns
-  auto returns = state->Returns();
-  for (open_spiel::Player p = 0; p < game->NumPlayers(); ++p) {
-    std::cout << "Final return for player " << p << ": " << returns[p] << "\n";
+  // 최종 결과 출력
+  std::vector<double> final_returns = state->Returns();
+  for (size_t i = 0; i < final_returns.size(); ++i) {
+    std::cout << "Player " << i << " final return: " << final_returns[i]
+              << "\n";
   }
 
   return 0;
