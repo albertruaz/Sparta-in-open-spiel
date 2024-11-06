@@ -1,6 +1,6 @@
 #include "agents/searchBot.h"
-#include "open_cspiel/spiel_utils.h"
 #include "open_spiel/spiel.h"
+#include "open_spiel/spiel_utils.h"
 #include <iostream>
 #include <memory>
 #include <random>

@@ -31,6 +31,10 @@ open_spiel::Action SearchBot::GetAction(const open_spiel::State *state,
     return legal_actions[0];
   }
 
+  // 기본 정책 움직임(bp_move) 설정
+  open_spiel::Action bp_move =
+      legal_actions[0] /* 기본 정책 함수 호출하여 bp_move를 설정 */;
+
   // 각 행동에 대한 통계 초기화
   std::map<open_spiel::Action, ActionStats> stats;
   for (auto action : legal_actions) {
@@ -39,28 +43,26 @@ open_spiel::Action SearchBot::GetAction(const open_spiel::State *state,
 
   int total_simulations = 0;
   int max_simulations = num_simulations_;
-
   bool frame_bail = false; // 프레임워크 움직임 중단 여부
 
   // 시뮬레이션 루프 시작
   while (total_simulations < max_simulations && !frame_bail) {
     // 총 시뮬레이션 횟수 계산
     double total_N = 0;
-    for (const auto &kv : stats) {
+    for (const auto &kv : stats)
       total_N += kv.second.N;
-    }
+
     double log_total_N = std::log(total_N + 1);
 
     // UCB 값을 기반으로 다음 시뮬레이션할 행동 선택
     double best_ucb = -std::numeric_limits<double>::infinity();
     open_spiel::Action best_action = open_spiel::kInvalidAction;
-
     for (const auto &kv : stats) {
       open_spiel::Action action = kv.first;
       const ActionStats &action_stats = kv.second;
-      if (action_stats.pruned) {
+      if (action_stats.pruned)
         continue;
-      }
+
       double ucb_value;
       if (action_stats.N == 0) {
         ucb_value =
@@ -140,9 +142,13 @@ open_spiel::Action SearchBot::GetAction(const open_spiel::State *state,
   }
 
   // 최종적으로 선택된 행동 출력 (디버깅용)
-  std::cout << "Selected action: "
+  if (bp_move != best_action)
+    std::cerr << "Search changed move. ";
+  std::cout << "Blueprint picked " << state->ActionToString(player_id_, bp_move)
+            << " with average score " << stats[bp_move].mean
+            << "; search picked "
             << state->ActionToString(player_id_, best_action)
-            << " with mean reward: " << best_mean << std::endl;
+            << " with average score " << stats[best_action].mean << std::endl;
 
   return best_action;
 }
