@@ -9,11 +9,7 @@
 *.code-workspace
 
 /build
-/etc/ckpt
-/etc/ckpt_files
-/etc/saved_q_tables
-/etc/saved_torchscript
-
+/data
 *.log
 
 
