@@ -61,7 +61,8 @@ int main(int argc, char **argv) {
     std::string q_table_w0_path = "data/sad_txt/badmode_4_run_0-w0.txt";
     std::string q_table_w1_path = "data/sad_txt/badmode_4_run_0-w1.txt";
 
-    TorchBot torch_bot(1, q_table_w0_path, q_table_w1_path);
+    TorchBot torch_bot_0(0, q_table_w0_path, q_table_w1_path);
+    TorchBot torch_bot_1(1, q_table_w0_path, q_table_w1_path);
     SearchBot search_bot(0, 100);
 
     // 게임 플레이
@@ -81,11 +82,13 @@ int main(int argc, char **argv) {
 
         if (method == "searchbot") {
           // 플레이어 0
-          action = search_bot.GetAction(state.get());
-          torch_bot.SetU0(action); // TorchBot에 플레이어 0의 액션 전달
+          open_spiel::Action frame_move = torch_bot_0.GetAction(state.get());
+          action = search_bot.GetAction(state.get(), frame_move);
+          // action = frame_move;
+          torch_bot_1.SetU0(action); // TorchBot에 플레이어 0의 액션 전달
         } else if (method == "blueprint") {
           // 플레이어 1
-          action = torch_bot.GetAction(state.get());
+          action = torch_bot_1.GetAction(state.get());
         } else {
           // 랜덤 액션 (여기서는 사용되지 않음)
           auto actions = state->LegalActions(player);

@@ -10,6 +10,6 @@
 
 /build
 /data
-*.log
+# *.log
 
 

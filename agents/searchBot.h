@@ -10,9 +10,8 @@ public:
   SearchBot(int player_id, int num_simulations = 100); // 생성자
   ~SearchBot();                                        // 소멸자
 
-  open_spiel::Action
-  GetAction(const open_spiel::State *state,
-            open_spiel::Action frame_move = open_spiel::kInvalidAction);
+  open_spiel::Action GetAction(const open_spiel::State *state,
+                               open_spiel::Action frame_move);
 
 private:
   std::vector<double> SimulatePlay(open_spiel::State *state);

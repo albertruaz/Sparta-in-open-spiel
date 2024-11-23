@@ -32,8 +32,7 @@ open_spiel::Action SearchBot::GetAction(const open_spiel::State *state,
   }
 
   // 기본 정책 움직임(bp_move) 설정
-  open_spiel::Action bp_move =
-      legal_actions[0] /* 기본 정책 함수 호출하여 bp_move를 설정 */;
+  open_spiel::Action bp_move = frame_move;
 
   // 각 행동에 대한 통계 초기화
   std::map<open_spiel::Action, ActionStats> stats;
@@ -93,31 +92,30 @@ open_spiel::Action SearchBot::GetAction(const open_spiel::State *state,
 
     total_simulations += 1;
 
-    // 가지치기 조건 검사
-    double best_mean = -std::numeric_limits<double>::infinity();
-    for (const auto &kv : stats) {
-      if (!kv.second.pruned && kv.second.mean > best_mean) {
-        best_mean = kv.second.mean;
-      }
-    }
-
-    for (auto &kv : stats) {
-      open_spiel::Action action = kv.first;
-      ActionStats &action_stats = kv.second;
-      if (action_stats.pruned || action_stats.N == 0) {
-        continue;
-      }
-      double c = std::sqrt(2);
-      double ucb =
-          action_stats.mean + c * std::sqrt(log_total_N / action_stats.N);
-      if (best_mean > ucb) {
-        action_stats.pruned = true;
-        if (action == frame_move) {
-          frame_bail = true;
-          break;
-        }
-      }
-    }
+    // // 가지치기 조건 검사
+    // double best_mean = -std::numeric_limits<double>::infinity();
+    // for (const auto &kv : stats) {
+    //   if (!kv.second.pruned && kv.second.mean > best_mean) {
+    //     best_mean = kv.second.mean;
+    //   }
+    // }
+    // for (auto &kv : stats) {
+    //   open_spiel::Action action = kv.first;
+    //   ActionStats &action_stats = kv.second;
+    //   if (action_stats.pruned || action_stats.N == 0) {
+    //     continue;
+    //   }
+    //   double c = std::sqrt(2);
+    //   double ucb =
+    //       action_stats.mean + c * std::sqrt(log_total_N / action_stats.N);
+    //   if (best_mean > ucb) {
+    //     action_stats.pruned = true;
+    //     if (action == frame_move) {
+    //       frame_bail = true;
+    //       break;
+    //     }
+    //   }
+    // }
   }
 
   // 프레임워크 움직임이 가지치기된 경우, 특별한 값 반환
