@@ -1,8 +1,8 @@
+// TorchBot.h
 #ifndef TORCHBOT_H
 #define TORCHBOT_H
 
 #include "open_spiel/spiel.h"
-#include <random>
 #include <string>
 #include <vector>
 
@@ -13,21 +13,21 @@ public:
   ~TorchBot();
 
   open_spiel::Action GetAction(const open_spiel::State *state);
-
-  void SetU0(int u0);
+  void SetU0(int u0); // 다른 에이전트의 행동을 전달하기 위한 함수
 
 private:
-  int player_id_;
-  int u0_; // 에이전트 0의 이전 행동
-
-  std::vector<std::vector<float>> w0_; // 에이전트 0의 Q-테이블
-  std::vector<std::vector<float>> w1_; // 에이전트 1의 Q-테이블
-
-  int GetPlayerCard(const open_spiel::State *state, int player_id);
+  // Q-테이블을 로드하는 함수
   void LoadQTable(const std::string &file_path,
                   std::vector<std::vector<float>> &q_table);
 
-  std::mt19937 rng_; // 랜덤 넘버 생성기 (필요한 경우)
+  // 플레이어별 행동 선택 함수
+  open_spiel::Action GetActionPlayer0(const open_spiel::State *state);
+  open_spiel::Action GetActionPlayer1(const open_spiel::State *state);
+
+  int player_id_;
+  int u0_; // 플레이어 0의 이전 행동을 저장
+  std::vector<std::vector<float>> w0_; // 에이전트 0의 Q-테이블
+  std::vector<std::vector<float>> w1_; // 에이전트 1의 Q-테이블
 };
 
 #endif // TORCHBOT_H
