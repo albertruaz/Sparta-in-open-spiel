@@ -23,3 +23,7 @@ g++ -std=c++17 -o ./build/tiny_hanabi_build tiny_hanabi_eval.cc agents/searchBot
 
 ./build/tiny_hanabi_build
 ```
+
+## Result
+
+[Result Log](https://github.com/albertruaz/Sparta-in-open-spiel/blob/main/result.log)
